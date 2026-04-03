@@ -1,91 +1,160 @@
-# Air-Quality-Prediction
+# Air Quality Prediction (PM 2.5) 🌫️
 
-## Table of Content
-  * Video Demo
-  * Overview
-  * Motivation
-  * Data Collection
-  * Resnet(Transform Learning)
-  * Installation and Run 
-  * Deployement on AWS
-  * Future scope of the Project
- 
+A machine learning project that predicts **PM 2.5 air quality levels** using meteorological data scraped from [tutiempo.net](https://en.tutiempo.net/climate). Multiple regression models are trained, compared, and the best model is deployed via a Flask web application.
 
+---
 
-## Overview
-Air pollution forecasting is the application of science and technology to predict the composition of the air pollution in the atmosphere for a given location and time. Mainstream pollution prediction algorithms tend to utilize air quality index or PM2. 5 concentration to indicate pollution level.
+## 📁 Project Structure
 
-The forecast may give the pollutant's concentration or the air quality index.
+```
+├── Data/
+│   ├── AQI/                    # Raw hourly PM 2.5 AQI CSV files (2013–2016)
+│   ├── Html_Data/              # Scraped HTML weather pages (by year/month)
+│   └── Real-Data/              # Processed CSVs per year + combined dataset
+│
+├── app.py                      # Flask web app for PM 2.5 prediction
+├── dataextractfile.py          # Web scraper for weather HTML pages
+├── Html_script.py              # Alternate HTML retrieval script
+├── Extract_combine.py          # Combines meteorological + AQI data into CSVs
+├── Plot_AQI.py                 # Computes daily average PM 2.5 from hourly data
+│
+├── Linear_Regression.ipynb
+├── Ridge_and_Lasso_Regression.ipynb
+├── Decision_Tree_.ipynb
+├── Random_Forest__Xgboost_and_Knn_Regressor.ipynb
+│
+└── random_forest_regression_model.pkl   # Saved best model (Random Forest)
+```
 
-Countries and cities are given forecasts by state and local government organizations, as well as private companies like Airly, AirVisual, Aerostate, BreezoMeter, PlumeLabs, and DRAXIS that provide air pollution forecasts.
-Air pollution forecasting can be done by coupling weather forecasting systems with chemical transport model and atmospheric dispersion modeling.
+---
 
-## Motivation
-What to do when you are at home due to this pandemic situation? I started to learn Machine Learning and Deep Learning model to get most out of it. I came to know mathematics behind all supervised models,unspurervised models,CNN,ANN and RNN. Finally it is important to work on application (real world application) to actually make a difference. To get a experience you have to work thats the reason to perform my favourable work done.
+## 📊 Dataset
 
+- **Source:** [tutiempo.net](https://en.tutiempo.net/climate/ws-421820.html) (weather) + Government AQI data (PM 2.5)
+- **Period:** 2013 – 2016
+- **Target Variable:** `PM 2.5` (daily average, µg/m³)
 
+### Features (Independent Variables)
 
+| Column | Description |
+|--------|-------------|
+| T | Average temperature (°C) |
+| TM | Maximum temperature (°C) |
+| Tm | Minimum temperature (°C) |
+| SLP | Sea-level pressure (hPa) |
+| H | Average relative humidity (%) |
+| VV | Average visibility (km) |
+| V | Average wind speed (km/h) |
+| VM | Maximum wind speed (km/h) |
 
-## Random Forest
+---
 
-Recent studies have incorporated machine learning techniques such as neural networks, regressions, and random forests to achieve high accuracy but I tried the random forest and it gives the good result 
+## ⚙️ Pipeline
 
-![Screenshot 2021-10-09 at 9 24 43 PM](https://user-images.githubusercontent.com/71332138/136665616-217d2265-53c7-4ad3-891b-cf0627a8c96c.png)
+### Step 1 — Data Collection
+Run `Html_script.py` (or `dataextractfile.py`) to scrape monthly weather HTML pages from tutiempo.net for 2013–2018 and save them under `Data/Html_Data/<year>/<month>.html`.
 
+```bash
+python Html_script.py
+```
 
-## Flask Framework
-Flask is a micro web framework written in Python. It is classified as a microframework because it does not require particular tools or libraries. ... Extensions exist for object-relational mappers, form validation, upload handling, various open authentication technologies and several common framework related tools.
+### Step 2 — AQI Processing
+`Plot_AQI.py` reads hourly PM 2.5 CSV files and computes a **daily average** for each year (2013–2016).
 
-Flask Tutorial : [https://www.tutorialspoint.com/flask/index.htm]
+### Step 3 — Data Combination
+`Extract_combine.py` parses the HTML files with BeautifulSoup, merges meteorological readings with the daily PM 2.5 averages, and writes annual CSVs and a combined `Real_Combine.csv` to `Data/Real-Data/`.
 
-## Screenshots of Project
+```bash
+python Extract_combine.py
+```
 
+### Step 4 — Model Training
+Open the notebooks in order to train and evaluate models:
 
---------------------------------------------------------------------------------------------------------------------------------------------------------------
-![Screenshot 2021-10-09 at 8 28 03 PM](https://user-images.githubusercontent.com/71332138/136664728-a7611f2a-e388-437a-acd6-0f0c8340fb99.png)
+1. `Linear_Regression.ipynb`
+2. `Ridge_and_Lasso_Regression.ipynb`
+3. `Decision_Tree_.ipynb`
+4. `Random_Forest__Xgboost_and_Knn_Regressor.ipynb`
 
+Each notebook follows the same workflow:
+- Load `Real_Combine.csv`
+- Handle null values
+- Correlation heatmap & feature importance (ExtraTreesRegressor)
+- Train/test split (70/30)
+- Model training + cross-validation
+- Hyperparameter tuning (GridSearchCV / RandomizedSearchCV)
+- Evaluation: MAE, MSE, RMSE
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------
-![Screenshot 2021-10-09 at 8 28 24 PM](https://user-images.githubusercontent.com/71332138/136664729-5d5c2ca8-3cf6-4bc4-8139-ff34dd48b7f5.png)
+### Step 5 — Deployment
+```bash
+python app.py
+```
+Opens a Flask server at `http://127.0.0.1:5000`. Enter the 8 meteorological values to get a predicted PM 2.5 concentration.
 
+---
 
----------------------------------------------------------------------------------------------------------------------------------------------------------------
+## 🤖 Models Compared
 
-![Screenshot 2021-10-09 at 8 28 33 PM](https://user-images.githubusercontent.com/71332138/136664734-96421644-e979-41bf-a6bc-6fd89659836a.png) 
----------------------------------------------------------------------------------------------------------------------------------------------------------------
+| Model | Notes |
+|-------|-------|
+| Linear Regression | Baseline model |
+| Ridge Regression | L2 regularization; best alpha via GridSearchCV |
+| Lasso Regression | L1 regularization; best alpha via GridSearchCV |
+| Decision Tree | Prone to overfitting; tuned via GridSearchCV |
+| **Random Forest** ⭐ | **Best performer**; tuned via RandomizedSearchCV |
+| XGBoost | Gradient boosting; tuned via RandomizedSearchCV |
+| KNN Regressor | Tuned for optimal K (1–39) |
 
-## Installation and Run
-The Code is written in Python 3.9 If you don't have Python installed you can find it [here](https://www.python.org/downloads/). If you are using a lower version of Python you can upgrade using the pip package, ensuring you have the latest version of pip. To install the required packages and libraries, run this command in the project directory after [cloning](https://www.howtogeek.com/451360/how-to-clone-a-github-repository/) the repository:
+The **Random Forest Regressor** (after hyperparameter tuning) gave the best results and is saved as `random_forest_regression_model.pkl` for deployment.
 
-Install Required Libraries
+---
 
-     Step 1: pip install -r requirements.txt
-     
-Running Project
+## 🚀 Running the Web App
 
-     Step 2: Python app.py
+### Prerequisites
 
-## Technologies Used
+```bash
+pip install flask numpy scikit-learn xgboost beautifulsoup4 pandas matplotlib seaborn lxml
+```
 
-![](https://forthebadge.com/images/badges/made-with-python.svg)  ![pandas](https://user-images.githubusercontent.com/71332138/134156736-9dcc4675-e588-42a6-9481-816ac08654ab.png).![numpy](https://user-images.githubusercontent.com/71332138/134540645-95fa9566-18ca-4719-8cc6-82153e96683c.png) ![flask](https://user-images.githubusercontent.com/71332138/136525463-d94befe6-f982-4f98-bd1c-833bdbd3c004.png)
-   
-         
-                            
-## Tools / IDE
-I used Jupyter NoteBook (Google Colab) for model training. used spyder for model deployment on the local system. To use Jupyter NoteBook and Spyder, just install anaconda.
+### Start the server
 
-Software Requirments
-* Python == 3.7.7
-* NumPy == 1.18.5
-* Flask == 1.1.2
+```bash
+python app.py
+```
 
-## Deploy AWS :
+Navigate to `http://127.0.0.1:5000`, fill in the weather parameters, and click **Predict** to see the estimated PM 2.5 value.
 
-Deployement Process going on...
+---
 
- 
-## Future Scope
+## 📦 Dependencies
 
-* Optimize Flask app.py
-* Add Extra Features 
-* Front-End 
+| Package | Purpose |
+|---------|---------|
+| `pandas`, `numpy` | Data manipulation |
+| `scikit-learn` | All regression models + evaluation |
+| `xgboost` | XGBoost regressor |
+| `matplotlib`, `seaborn` | Visualization |
+| `beautifulsoup4`, `lxml` | HTML parsing |
+| `requests` | Web scraping |
+| `flask` | Web deployment |
+| `pickle` | Model serialization |
+
+---
+
+## 📈 Evaluation Metrics
+
+All models are evaluated using:
+- **MAE** — Mean Absolute Error
+- **MSE** — Mean Squared Error  
+- **RMSE** — Root Mean Squared Error
+- **R²** — Coefficient of Determination
+
+---
+
+## 📝 Notes
+
+- The AQI data files (`aqi2013.csv` – `aqi2016.csv`) must be present in `Data/AQI/` before running `Extract_combine.py`.
+- The scraper targets weather station `ws-421820` (New Delhi area).
+- Invalid AQI readings (`NoData`, `PwrFail`, `---`, `InVld`) are excluded from the daily average calculation.
+- The Flask app expects the saved model at `random_forest_regression_model.pkl` in the root directory.
