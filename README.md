@@ -10,18 +10,6 @@
   * Deployement on AWS
   * Future scope of the Project
  
-## Linkdin Profile
-For any queries regarding about this project contact me
-
-Link : https://www.linkedin.com/in/anil-l-b023631b6/
-
-## Video Demo
-
-
-https://user-images.githubusercontent.com/71332138/136665059-bbd3d181-1423-4da5-99bb-77882811767d.mov
-
-
-
 
 
 ## Overview
@@ -36,11 +24,6 @@ Air pollution forecasting can be done by coupling weather forecasting systems wi
 What to do when you are at home due to this pandemic situation? I started to learn Machine Learning and Deep Learning model to get most out of it. I came to know mathematics behind all supervised models,unspurervised models,CNN,ANN and RNN. Finally it is important to work on application (real world application) to actually make a difference. To get a experience you have to work thats the reason to perform my favourable work done.
 
 
-
-
-## Data Collection 
-
-I just took the Bangalore city Air Quality data with help of web scraping and you can find through online which City data you want
 
 
 ## Random Forest
